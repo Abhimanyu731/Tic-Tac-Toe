@@ -14,13 +14,17 @@
 
     static int[] allInput = new int[9];
 
+    static int chooseSingleOrMulti;
     //All possible win conditions
     static int[,] winconditon = new[,]
     { {11,13,15},{21,23,25},{31,33,35},{11,21,31},
       {13,23,33},{15,25,35},{11,23,35 },{15,23,31}
         };
+    
     private static void Main(string[] args)
     {
+        int singleOrMultiPlayerChoose = AskSingleOrMultiPlayer();
+        ShowSingleOrMultiPlayerModeOnTop();
         allPossibleInput = DrawPositionHitsBoard();
 
         for (int k = 1; k <= 9; k++)
@@ -28,31 +32,37 @@
 
             if (k % 2 == 0)
             {
-                int userInput = GetUserInput("Enter the index where Player 1 want X", ref k);
-                //if userinput is zero without increament rerun this loop
-                if (userInput == 0)
+                if (singleOrMultiPlayerChoose == 1)
                 {
-                    continue;
+                    int aiInput = GetAiInput();
+                    Console.Clear();
+                    Console.WriteLine("Ai Choose {0} for index to place X \n Press Enter to continue", aiInput);
+                    userXinput[X] = aiInput;
+                    X++;
+                    Console.WriteLine();
+                    DrawPlayingBoard();
+                    Console.ReadLine();
+
                 }
-                userXinput[X] = userInput;
-                X++;
+                else if (singleOrMultiPlayerChoose == 2)
+                {
+                    int userInput = GetUserInput("Enter the index where Player 2 want X", ref k);
+                    userXinput[X] = userInput;
+                    X++;
+
+                }
             }
             else
             {
-                int userInput = GetUserInput("Enter the index where Player 2 want 0", ref k);
-                if (userInput == 0)
-                {
-                    continue;
-                }
+                int userInput = GetUserInput("Enter the index where Player 1 want 0", ref k);
                 userOinput[O] = userInput;
                 O++;
-
             }
 
             Console.Clear();
+            ShowSingleOrMultiPlayerModeOnTop();
             DrawPositionHitsBoard();
             Console.WriteLine();
-
             DrawPlayingBoard();
             bool hasAnyOnewon = CheckingWin();
 
@@ -60,12 +70,68 @@
             {
                 break;
             }
-            if(k == 9)
+            if (k == 9)
             {
                 Console.WriteLine("Draw");
             }
         }
         Console.WriteLine("Game Finished");
+    }
+
+    private static void ShowSingleOrMultiPlayerModeOnTop()
+    {
+        if (chooseSingleOrMulti == 1)
+        {
+            Console.WriteLine("Single Player");
+            Console.WriteLine();
+        }
+        else if (chooseSingleOrMulti == 2)
+        {
+            Console.WriteLine("MultiPlayer");
+            Console.WriteLine();
+        }
+    }
+
+    private static int AskSingleOrMultiPlayer()
+    {
+        
+        Console.WriteLine("Enter 1 for single Player and 2 for multi Player");
+        if (int.TryParse(Console.ReadLine(), out chooseSingleOrMulti))
+        {
+            if (chooseSingleOrMulti == 1 || chooseSingleOrMulti == 2)
+            {
+                Console.Clear();
+                return chooseSingleOrMulti;
+            }
+            else
+            {
+                Console.WriteLine("Player enter 1 or 2");
+                return AskSingleOrMultiPlayer();
+            }
+        }
+        else
+        {
+            Console.WriteLine("Player enter 1 or 2");
+            return AskSingleOrMultiPlayer();
+        }
+    }
+
+    private static int GetAiInput()
+    {
+        Random rand = new Random();
+        int aiInput = allPossibleInput[rand.Next(0, 9)];
+        for (int i = 0; i < allInput.Length; i++)
+        {
+            if (aiInput == allInput[i])
+            {
+                return GetAiInput();
+            }
+
+        }
+        return aiInput;
+
+
+
     }
 
     private static void DrawPlayingBoard()
@@ -106,6 +172,7 @@
     }
     private static int[] DrawPositionHitsBoard()
     {
+
         int[] allPossibleInput = new int[9];
         int posibleInputVariable = 0;
 
@@ -131,18 +198,18 @@
     private static int GetUserInput(string displayString, ref int k)
     {
         Console.WriteLine(displayString);
-        if(int.TryParse(Console.ReadLine(),out int  userInput))
+        if (int.TryParse(Console.ReadLine(), out int userInput))
         {
             bool userSameInput = IsUserInputInValid(userInput, k);
             if (userSameInput)
             {
-                k--;
+                
                 Console.WriteLine();
                 Console.WriteLine("Place Already Taken or Invalid Input enter another one");
                 Console.WriteLine();
-                return 0;
+                return GetUserInput(displayString,ref k); ;
             }
-            
+
             return userInput;
 
         }
@@ -153,9 +220,9 @@
             Console.WriteLine();
             return GetUserInput(displayString, ref k);
         }
-        
-        
-        
+
+
+
     }
     private static bool IsUserInputInValid(int userInput, int k)
     {
