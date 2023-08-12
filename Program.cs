@@ -12,31 +12,33 @@
     static int O = 0;
     static int X = 0;
 
+
     static int[] allInput = new int[9];
 
     static int chooseSingleOrMulti;
+
     //All possible win conditions
     static int[,] winconditon = new[,]
     { {11,13,15},{21,23,25},{31,33,35},{11,21,31},
       {13,23,33},{15,25,35},{11,23,35 },{15,23,31}
         };
-    
+    static int currentIteration = 1;
     private static void Main(string[] args)
     {
         int singleOrMultiPlayerChoose = AskSingleOrMultiPlayer();
         ShowSingleOrMultiPlayerModeOnTop();
         allPossibleInput = DrawPositionHitsBoard();
 
-        for (int k = 1; k <= 9; k++)
+        while (currentIteration <= 9)
         {
 
-            if (k % 2 == 0)
+            if (currentIteration % 2 == 0)
             {
                 if (singleOrMultiPlayerChoose == 1)
                 {
                     int aiInput = GetAiInput();
                     Console.Clear();
-                    Console.WriteLine("Ai Choose {0} for index to place X \n Press Enter to continue", aiInput);
+                    Console.WriteLine("Ai Choose {0} for index to place X \n Press Enter to continue", ChangeBoardIndexToUserFriendly(aiInput));
                     userXinput[X] = aiInput;
                     X++;
                     Console.WriteLine();
@@ -46,23 +48,28 @@
                 }
                 else if (singleOrMultiPlayerChoose == 2)
                 {
-                    int userInput = GetUserInput("Enter the index where Player 2 want X", ref k);
+                    int userInput = GetUserInput("Enter the index where Player 2 want X");
                     userXinput[X] = userInput;
                     X++;
 
                 }
+
+
+
             }
             else
             {
-                int userInput = GetUserInput("Enter the index where Player 1 want 0", ref k);
+                int userInput = GetUserInput("Enter the index where Player 1 want 0");
                 userOinput[O] = userInput;
                 O++;
+
             }
 
             Console.Clear();
             ShowSingleOrMultiPlayerModeOnTop();
             DrawPositionHitsBoard();
             Console.WriteLine();
+
             DrawPlayingBoard();
             bool hasAnyOnewon = CheckingWin();
 
@@ -70,10 +77,11 @@
             {
                 break;
             }
-            if (k == 9)
+            if (currentIteration == 9)
             {
                 Console.WriteLine("Draw");
             }
+            currentIteration++;
         }
         Console.WriteLine("Game Finished");
     }
@@ -94,7 +102,7 @@
 
     private static int AskSingleOrMultiPlayer()
     {
-        
+
         Console.WriteLine("Enter 1 for single Player and 2 for multi Player");
         if (int.TryParse(Console.ReadLine(), out chooseSingleOrMulti))
         {
@@ -108,6 +116,7 @@
                 Console.WriteLine("Player enter 1 or 2");
                 return AskSingleOrMultiPlayer();
             }
+
         }
         else
         {
@@ -175,39 +184,43 @@
 
         int[] allPossibleInput = new int[9];
         int posibleInputVariable = 0;
+        Console.WriteLine(
+                   "{0}|{1}|{2}\n" +
+                   "{3}|{4}|{5}\n" +
+                   "{6}|{7}|{8}\n",
+                   1, 2, 3,
+                   4, 5, 6,
+                   7, 8, 9
+                   );
 
         for (int i = 1; i <= row; i++)
         {
             for (int j = 1; j <= col; j++)
             {
-                if (j % 2 == 0)
+                if (!(j % 2 == 0))
                 {
-                    Console.Write("|");
-                    continue;
+                    allPossibleInput[posibleInputVariable] = i * 10 + j;
+                    posibleInputVariable++;
                 }
-
-                Console.Write("" + i + "" + (j));
-                allPossibleInput[posibleInputVariable] = i * 10 + j;
-                posibleInputVariable++;
             }
-            Console.WriteLine();
         }
 
         return allPossibleInput;
     }
-    private static int GetUserInput(string displayString, ref int k)
+    private static int GetUserInput(string displayString)
     {
         Console.WriteLine(displayString);
         if (int.TryParse(Console.ReadLine(), out int userInput))
         {
-            bool userSameInput = IsUserInputInValid(userInput, k);
+            userInput = ChangeUserInputToBoardIndex(userInput);
+            bool userSameInput = IsUserInputInValid(userInput);
             if (userSameInput)
             {
-                
+
                 Console.WriteLine();
                 Console.WriteLine("Place Already Taken or Invalid Input enter another one");
                 Console.WriteLine();
-                return GetUserInput(displayString,ref k); ;
+                return GetUserInput(displayString); ;
             }
 
             return userInput;
@@ -218,24 +231,57 @@
             Console.WriteLine();
             Console.WriteLine("Please Enter a valid index");
             Console.WriteLine();
-            return GetUserInput(displayString, ref k);
+            return GetUserInput(displayString);
         }
 
+    }
+    private static int ChangeUserInputToBoardIndex(int userInput)
+    {
+        switch (userInput)
+        {
+            case 1:return 11;
+            case 2: return 13;
+            case 3: return 15;
+            case 4: return 21;
+            case 5: return 23;
+            case 6: return 25;
+            case 7: return 31;
+            case 8: return 33;
+            case 9: return 35;
+            default:return 0;
 
+        }
 
     }
-    private static bool IsUserInputInValid(int userInput, int k)
+    private static int ChangeBoardIndexToUserFriendly(int userInput)
+    {
+        switch (userInput)
+        {
+            case 11: return 1;
+            case 13: return 2;
+            case 15: return 3;
+            case 21: return 4;
+            case 23: return 5;
+            case 25: return 6;
+            case 31: return 7;
+            case 33: return 8;
+            case 35: return 9;
+            default: return 0;
+
+        }
+
+    }
+    private static bool IsUserInputInValid(int userInput)
     {
         if (IsUserInputPossible(userInput, allPossibleInput))
         {
             Console.WriteLine("valid Input");
-            return IsUserInputAlreadyGiven(userInput, allInput, k);
+            return IsUserInputAlreadyGiven(userInput, allInput);
         }
         return true;
-
     }
 
-    private static bool IsUserInputAlreadyGiven(int userInput, int[] allInput, int k)
+    private static bool IsUserInputAlreadyGiven(int userInput, int[] allInput)
     {
         for (int j = 0; j < allInput.Length; j++)
         {
@@ -246,7 +292,7 @@
 
             }
         }
-        allInput[k - 1] = userInput;
+        allInput[currentIteration - 1] = userInput;
         return false;
     }
     private static bool IsUserInputPossible(int userInput, int[] allPossibleInput)
